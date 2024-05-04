@@ -7,6 +7,6 @@ import (
 
 func TestRegister(user models.User) {
 
-	db.InsertUserIntoDB(user)
+	db.InsertUserIntoDB(&user)
 
 }

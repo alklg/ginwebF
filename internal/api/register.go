@@ -40,6 +40,7 @@ func PostRegisterHandler(c *gin.Context) {
 
 	fmt.Println(user)
 
+	db.InsertUserIntoDB(&user)
 }
 
 func LoginUserHandler(c *gin.Context) {

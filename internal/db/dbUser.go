@@ -53,6 +53,9 @@ func ExamineUserLogin(username, password string) (code int, err error) {
 	return 4, nil
 }
 
-func InsertUserIntoDB(user models.User) {
-	db.Table("users").Select("Name", "Password, Email").Create(&user)
+func InsertUserIntoDB(user *models.User) {
+	db.Table("users").Select("Username", "Password", "Email").Create(&user)
+	var user2 models.User
+	db.Table("users").Where("username = ? AND password = ?", user.Username, user.Password, user.Email).First(&user2)
+	fmt.Println(user2)
 }
