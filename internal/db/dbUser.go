@@ -41,6 +41,7 @@ func ExamineUserLogin(username, password string) (code int, err error) {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			// not find user
 			fmt.Println("user not find")
+			err = errors.New("userNotFound")
 			return 2, err
 		} else {
 			fmt.Println("Error: ", result.Error)
@@ -53,9 +54,18 @@ func ExamineUserLogin(username, password string) (code int, err error) {
 	return 4, nil
 }
 
+// InsertUserIntoDB receive user message from frontend and curd to database
 func InsertUserIntoDB(user *models.User) {
 	db.Table("users").Select("Username", "Password", "Email").Create(&user)
 	var user2 models.User
 	db.Table("users").Where("username = ? AND password = ?", user.Username, user.Password, user.Email).First(&user2)
 	fmt.Println(user2)
+}
+
+func ParseUserMessage(user *models.User) int {
+	var user2 models.User
+	db.Table("users").Where("username = ? AND password = ?", user.Username, user.Password).First(&user2)
+	user.Uid = user2.Uid
+
+	return user.Uid
 }

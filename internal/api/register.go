@@ -5,7 +5,11 @@ import (
 	"ginweb/internal/db"
 	"ginweb/internal/models"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 var r = gin.Default()
@@ -34,13 +38,43 @@ func PostRegisterHandler(c *gin.Context) {
 	}
 
 	// return success Page
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Registration successful",
-		"data":    user})
 
 	fmt.Println(user)
 
 	db.InsertUserIntoDB(&user)
+
+	uid := db.ParseUserMessage(&user)
+
+	// generate jwt
+	signingKey := make([]byte, 32)
+
+	_, err = rand.Read(signingKey)
+	if err != nil {
+		log.Println("Error generating random key:", err)
+		return
+	}
+
+	Claims := jwt.MapClaims{
+		"iss": "FurudoErika",
+		"sub": uid,
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims)
+	signedToken, err := token.SignedString(signingKey)
+
+	if err != nil {
+		log.Println(" generate token err = %v ", err)
+		return
+	}
+
+	c.Header("Authorization", "Bearer "+signedToken)
+	c.JSON(http.StatusOK, gin.H{
+		"data":   signedToken,
+		"code":   "200",
+		"status": "success",
+		"source": "PostLoginHandler",
+	})
 }
 
 func LoginUserHandler(c *gin.Context) {
