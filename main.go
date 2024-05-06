@@ -22,7 +22,7 @@ func main() {
 
 	r.Static("/static", "./vueo")
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://119.45.192.148:8000"},    // 允许的前端应用地址
+		AllowOrigins: []string{"http://119.45.145.96:8000"},     // 允许的前端应用地址
 		AllowMethods: []string{"GET", "POST", "OPTIONS"},        // 允许的 HTTP 方法
 		AllowHeaders: []string{"Authorization", "Content-Type"}, // 允许的请求头字段
 	}))
@@ -47,6 +47,8 @@ func main() {
 	{
 		photoSolveGroup.GET("", api.GetPhotoSolve)
 		photoSolveGroup.POST("", api.PostPhotoSolve)
+		// photoSolveGroup.PUT()
+		// photoSolveGroup.DELETE()
 	}
 
 	err := r.Run(port)
