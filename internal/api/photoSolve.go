@@ -6,13 +6,35 @@ import (
 	"ginweb/internal/models"
 	"github.com/gin-gonic/gin"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
 func GetPhotoSolve(c *gin.Context) {
 	fmt.Println("get photo solve success")
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"data": "open directory error"})
+	}
+	downloadPath := filepath.Join(currentDir, "././downloads") + "/output_image.png"
+	fmt.Println(downloadPath)
+
+	data, err := ioutil.ReadFile(downloadPath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to read processed image"})
+	}
+
+	c.Header("Content-Type", "image/jpeg")
+	c.Header("Content-Disposition", "attachment; filename=processed_image.jpg")
+
+	c.Data(http.StatusOK, "image/jpeg", data)
+	return
 }
 
 func PostPhotoSolve(c *gin.Context) {
@@ -47,6 +69,7 @@ func PostPhotoSolve(c *gin.Context) {
 		return
 	}
 
+	var filename string
 	for _, file := range files {
 		src, err := file.Open()
 
@@ -59,9 +82,12 @@ func PostPhotoSolve(c *gin.Context) {
 		}
 
 		defer src.Close()
-		fmt.Println(file.Filename)
+		filename = file.Filename
 
-		dst, err := os.Create(uploadPath + file.Filename)
+		fmt.Println(filename)
+
+		dst, err := os.Create(uploadPath + filename)
+		fmt.Println("used for test----", uploadPath+filename)
 
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
@@ -88,6 +114,22 @@ func PostPhotoSolve(c *gin.Context) {
 	})
 
 	fmt.Println("123")
+
+	pythonPath := filepath.Join(currentDir, "././") + "/main.py"
+	println(pythonPath)
+
+	cmd := exec.Command("python3", pythonPath, uploadPath+filename)
+	fmt.Println(cmd)
+
+	output, err := cmd.Output()
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"data": "Error executing Python script",
+		})
+		return
+	}
+
+	fmt.Println(output)
 	return
 }
 
